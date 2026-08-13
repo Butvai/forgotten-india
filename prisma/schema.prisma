@@ -63,3 +63,48 @@ model Language {
   name String @unique
   code String @unique
   submissions Submission[] }
+model Contributor {
+  id String @id @default(cuid())
+  name String
+  isAnonymous Boolean @default(false)
+  relationship String?
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
+  submissions Submission[] }
+model Media {
+  id String @id @default(cuid())
+  submissionId String
+  url String
+  type MediaType
+  size Int?
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade) }
+model Tag {
+  id String @id @default(cuid())
+  name String @unique
+  submissions SubmissionTag[] }
+model SubmissionTag {
+  submissionId String
+  tagId String
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  @@id([submissionId, tagId]) }
+model ModerationAction {
+  id String @id @default(cuid())
+  submissionId String
+  adminId String
+  action String
+  note String?
+  createdAt DateTime @default(now())
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  admin User @relation(fields: [adminId], references: [id]) }
+model Flag {
+  id String @id @default(cuid())
+  submissionId String
+  reason String
+  createdAt DateTime @default(now())
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade) }
+model View {
+  id String @id @default(cuid())
+  submissionId String
+  createdAt DateTime @default(now())
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade) }
