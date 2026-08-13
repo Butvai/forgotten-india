@@ -32,7 +32,7 @@ export default function HomePage() {
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to bottom, rgba(20,12,8,0.45) 0%, rgba(30,18,10,0.75) 100%)',
+          background: 'linear-gradient(to bottom, rgba(20,12,8,0.72) 0%, rgba(30,18,10,0.88) 100%)',
         }} />
 
         {/* Hero Content */}
