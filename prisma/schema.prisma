@@ -1,180 +1,65 @@
-// This is your Prisma schema file
-// Learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum Role {
-  USER
-  ADMIN
-  MODERATOR
-}
-
-enum SubmissionStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  NEEDS_CHANGES
-  FLAGGED
-}
-
-enum MediaType {
-  IMAGE
-  AUDIO
-  VIDEO
-  TEXT
-}
-
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"
+  url = env("DATABASE_URL") }
+enum Status { PENDING APPROVED REJECTED NEEDS_CHANGES FLAGGED }
+enum MediaType { IMAGE AUDIO VIDEO TEXT }
+enum Role { USER ADMIN MODERATOR }
 model User {
-  id                String             @id @default(cuid())
-  email             String             @unique
-  password          String
-  name              String?
-  role              Role               @default(USER)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  moderationActions ModerationAction[]
-  submissions       Submission[]       @relation("SubmittedBy")
-  approvedSubmissions Submission[]     @relation("ApprovedBy")
-}
-
-model State {
-  id        String     @id @default(cuid())
-  name      String
-  slug      String     @unique
-  districts District[]
-  submissions Submission[]
-}
-
-model District {
-  id          String       @id @default(cuid())
-  name        String
-  slug        String
-  stateId     String
-  state       State        @relation(fields: [stateId], references: [id])
-  submissions Submission[]
-
-  @@unique([slug, stateId])
-}
-
-model Category {
-  id          String       @id @default(cuid())
-  name        String
-  slug        String       @unique
-  submissions Submission[]
-}
-
-model Language {
-  id          String       @id @default(cuid())
-  name        String
-  code        String       @unique
-  submissions Submission[]
-}
-
-model Contributor {
-  id           String       @id @default(cuid())
-  name         String?
-  isAnonymous  Boolean      @default(false)
-  relationship String?
-  age          Int?
-  userId       String?
-  submissions  Submission[]
-}
-
+  id String @id @default(cuid())
+  email String @unique
+  password String
+  role Role @default(USER)
+  createdAt DateTime @default(now())
+  contributions Contributor[]
+  approved Submission[] @relation("approver")
+  moderations ModerationAction[] }
 model Submission {
-  id                String             @id @default(cuid())
-  slug              String             @unique
-  title             String
-  description       String?
-  content           String?
-  story             String?
-  whoTaught         String?
-  whenLearned       String?
-  approximateAge    String?
-  isFamilySpecific  Boolean            @default(false)
-  originalLanguage  String?
-  translation       String?
-  town              String?
-  status            SubmissionStatus   @default(PENDING)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  approvedAt        DateTime?
-  viewCount         Int                @default(0)
-  categoryId        String
-  category          Category           @relation(fields: [categoryId], references: [id])
-  stateId           String
-  state             State              @relation(fields: [stateId], references: [id])
-  districtId        String
-  district          District           @relation(fields: [districtId], references: [id])
-  languageId        String?
-  language          Language?          @relation(fields: [languageId], references: [id])
-  contributorId     String
-  contributor       Contributor        @relation(fields: [contributorId], references: [id])
-  submittedById     String?
-  submittedBy       User?              @relation("SubmittedBy", fields: [submittedById], references: [id])
-  approvedById      String?
-  approvedBy        User?              @relation("ApprovedBy", fields: [approvedById], references: [id])
-  media             Media[]
-  tags              SubmissionTag[]
-  moderationActions ModerationAction[]
-  flags             Flag[]
-  views             View[]
-}
-
-model Media {
-  id           String     @id @default(cuid())
-  submissionId String
-  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  url          String
-  type         MediaType
-  size         Int?
-  filename     String?
-  createdAt    DateTime   @default(now())
-}
-
-model Tag {
-  id          String          @id @default(cuid())
-  name        String          @unique
-  submissions SubmissionTag[]
-}
-
-model SubmissionTag {
-  submissionId String
-  tagId        String
-  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  tag          Tag        @relation(fields: [tagId], references: [id])
-
-  @@id([submissionId, tagId])
-}
-
-model ModerationAction {
-  id           String     @id @default(cuid())
-  submissionId String
-  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  adminId      String
-  admin        User       @relation(fields: [adminId], references: [id])
-  action       String
-  note         String?
-  createdAt    DateTime   @default(now())
-}
-
-model Flag {
-  id           String     @id @default(cuid())
-  submissionId String
-  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  reason       String
-  createdAt    DateTime   @default(now())
-}
-
-model View {
-  id           String     @id @default(cuid())
-  submissionId String
-  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  createdAt    DateTime   @default(now())
-}
+  id String @id @default(cuid())
+  slug String @unique
+  title String
+  description String?
+  content String
+  categoryId String
+  stateId String
+  districtId String?
+  languageId String?
+  contributorId String
+  status Status @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  approvedAt DateTime?
+  approvedById String?
+  category Category @relation(fields: [categoryId], references: [id])
+  state State @relation(fields: [stateId], references: [id])
+  district District? @relation(fields: [districtId], references: [id])
+  language Language? @relation(fields: [languageId], references: [id])
+  contributor Contributor @relation(fields: [contributorId], references: [id])
+  approvedBy User? @relation("approver", fields: [approvedById], references: [id])
+  media Media[]
+  tags SubmissionTag[]
+  moderations ModerationAction[]
+  flags Flag[]
+  views View[] }
+model Category {
+  id String @id @default(cuid())
+  name String @unique
+  slug String @unique
+  submissions Submission[] }
+model State {
+  id String @id @default(cuid())
+  name String @unique
+  slug String @unique
+  districts District[]
+  submissions Submission[] }
+model District {
+  id String @id @default(cuid())
+  name String
+  slug String @unique
+  stateId String
+  state State @relation(fields: [stateId], references: [id])
+  submissions Submission[] }
+model Language {
+  id String @id @default(cuid())
+  name String @unique
+  code String @unique
+  submissions Submission[] }
