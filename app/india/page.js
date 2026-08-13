@@ -73,12 +73,13 @@ export default function IndiaPage() {
       ) : (
         <div style={s.grid}>
           {submissions.map(sub => (
-            <div key={sub.id} style={s.card}>
+            <a key={sub.id} href={`/memory/${sub.id}`} style={{ ...s.card, textDecoration: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
               <div style={s.cardCat}>{sub.category?.name}</div>
               <div style={s.cardTitle}>{sub.title}</div>
               <div style={s.cardMeta}>{sub.state?.name}{sub.district ? ` · ${sub.district.name}` : ''}{sub.contributor?.name ? ` · Remembered by ${sub.contributor.name}` : ''}</div>
               {sub.description && <div style={s.cardDesc}>{sub.description.slice(0, 150)}{sub.description.length > 150 ? '...' : ''}</div>}
-            </div>
+              <div style={{ marginTop: 'auto', paddingTop: '1rem', fontFamily: '"Manrope", sans-serif', fontSize: '0.8rem', color: '#c2714f', fontWeight: 500 }}>Read memory →</div>
+            </a>
           ))}
         </div>
       )}
