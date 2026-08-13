@@ -8,6 +8,8 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 })
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('pending')
+  const [editingId, setEditingId] = useState(null)
+  const [editForm, setEditForm] = useState({})
 
   useEffect(() => {
     const token = localStorage.getItem('authToken')
@@ -41,6 +43,27 @@ export default function AdminDashboard() {
     fetchSubmissions(token)
   }
 
+  const deleteSubmission = async (id) => {
+    if (!window.confirm('Permanently delete this memory? This cannot be undone.')) return
+    const token = localStorage.getItem('authToken')
+    await fetch('/api/admin/submissions/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+    fetchSubmissions(token)
+  }
+
+  const saveEdit = async (id) => {
+    const token = localStorage.getItem('authToken')
+    await fetch('/api/admin/submissions/' + id, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(editForm)
+    })
+    setEditingId(null)
+    fetchSubmissions(token)
+  }
+
   const logout = () => { localStorage.removeItem('authToken'); router.push('/admin') }
 
   const filtered = submissions.filter(s => activeTab === 'all' ? true : s.status.toLowerCase() === activeTab)
@@ -61,9 +84,11 @@ export default function AdminDashboard() {
     cardTitle: { fontFamily: '"Cormorant Garamond", serif', fontSize: '1.25rem', color: '#3d2314', marginBottom: '0.25rem', fontWeight: 500 },
     meta: { fontSize: '0.8rem', color: '#7a6355', marginBottom: '0.75rem' },
     desc: { fontSize: '0.9rem', color: '#5a4a3a', marginBottom: '1rem', lineHeight: 1.6 },
-    actions: { display: 'flex', gap: '0.5rem' },
+    actions: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' },
     approveBtn: { backgroundColor: '#2d6a4f', color: '#fff', border: 'none', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem' },
     rejectBtn: { backgroundColor: '#c0392b', color: '#fff', border: 'none', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem' },
+    editBtn: { backgroundColor: '#3d4f7c', color: '#fff', border: 'none', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem' },
+    deleteBtn: { backgroundColor: '#7a1a1a', color: '#fff', border: 'none', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem' },
     badge: (status) => ({
       display: 'inline-block', padding: '0.2rem 0.6rem', fontSize: '0.75rem', fontWeight: 600,
       backgroundColor: status === 'PENDING' ? '#fff3cd' : status === 'APPROVED' ? '#d4edda' : '#f8d7da',
@@ -76,7 +101,7 @@ export default function AdminDashboard() {
   return (
     <div style={s.page}>
       <div style={s.header}>
-        <h1 style={s.headerTitle}>Forgotten India — Admin</h1>
+        <h1 style={s.headerTitle}>Forgotten India \u2014 Admin</h1>
         <button style={s.logoutBtn} onClick={logout}>Sign out</button>
       </div>
       <div style={s.content}>
@@ -102,16 +127,49 @@ export default function AdminDashboard() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={s.cardTitle}>{sub.title}<span style={s.badge(sub.status)}>{sub.status}</span></div>
-                <div style={s.meta}>{sub.category} · {sub.state} {sub.district ? '· ' + sub.district : ''} · {new Date(sub.createdAt).toLocaleDateString('en-IN')}</div>
+                <div style={s.meta}>{sub.category} \u00b7 {sub.state} {sub.district ? '\u00b7 ' + sub.district : ''} \u00b7 {new Date(sub.createdAt).toLocaleDateString('en-IN')}</div>
               </div>
             </div>
             {sub.description && <div style={s.desc}>{sub.description}</div>}
             {sub.story && <div style={{ ...s.desc, fontStyle: 'italic', borderLeft: '3px solid #e8ddd4', paddingLeft: '1rem' }}>{sub.story}</div>}
-            <div style={s.meta}>Contributor: {sub.contributor?.name || 'Anonymous'} · Language: {sub.language || 'Not specified'}</div>
-            {sub.status === 'PENDING' && (
-              <div style={s.actions}>
-                <button style={s.approveBtn} onClick={() => moderate(sub.id, 'APPROVE')}>✓ Approve</button>
-                <button style={s.rejectBtn} onClick={() => moderate(sub.id, 'REJECT')}>✗ Reject</button>
+            <div style={s.meta}>Contributor: {sub.contributor?.name || 'Anonymous'} \u00b7 Language: {sub.language || 'Not specified'}</div>
+            <div style={s.actions}>
+              {sub.status === 'PENDING' && (
+                <>
+                  <button style={s.approveBtn} onClick={() => moderate(sub.id, 'APPROVE')}>\u2713 Approve</button>
+                  <button style={s.rejectBtn} onClick={() => moderate(sub.id, 'REJECT')}>\u2717 Reject</button>
+                </>
+              )}
+              <button style={s.editBtn} onClick={() => { setEditingId(sub.id); setEditForm({ title: sub.title, description: sub.description || '', story: sub.story || '', whoTaught: sub.whoTaught || '', town: sub.town || '' }) }}>
+                \u270f Edit
+              </button>
+              <button style={s.deleteBtn} onClick={() => deleteSubmission(sub.id)}>
+                \ud83d\uddd1 Delete
+              </button>
+            </div>
+            {editingId === sub.id && (
+              <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#faf8f4', border: '1px solid #e8ddd4' }}>
+                <p style={{ fontFamily: '"Manrope", sans-serif', fontSize: '0.85rem', fontWeight: 600, color: '#3d2314', marginBottom: '0.75rem' }}>Editing memory</p>
+                {[
+                  { key: 'title', label: 'Title' },
+                  { key: 'description', label: 'Description' },
+                  { key: 'story', label: 'Story / Memory' },
+                  { key: 'whoTaught', label: 'Who taught them' },
+                  { key: 'town', label: 'Town / Village' },
+                ].map(({ key, label }) => (
+                  <div key={key} style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ display: 'block', fontFamily: '"Manrope", sans-serif', fontSize: '0.75rem', color: '#7a6355', marginBottom: '0.25rem', fontWeight: 500 }}>{label}</label>
+                    <textarea
+                      value={editForm[key] || ''}
+                      onChange={e => setEditForm(f => ({ ...f, [key]: e.target.value }))}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #e8ddd4', fontFamily: '"Manrope", sans-serif', fontSize: '0.9rem', minHeight: key === 'story' ? '80px' : '40px', boxSizing: 'border-box', resize: 'vertical' }}
+                    />
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button style={{ backgroundColor: '#2d6a4f', color: '#fff', border: 'none', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem' }} onClick={() => saveEdit(sub.id)}>Save changes</button>
+                  <button style={{ backgroundColor: '#7a6355', color: '#fff', border: 'none', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem' }} onClick={() => setEditingId(null)}>Cancel</button>
+                </div>
               </div>
             )}
           </div>
