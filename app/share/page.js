@@ -106,10 +106,23 @@ export default function SharePage() {
           <div style={s.card}>
             <p style={s.stepTitle}>Add media (optional)</p>
             <p style={{ fontFamily: '"Manrope", sans-serif', color: '#7a6355', marginBottom: '1.5rem', fontSize: '0.95rem' }}>You can add images, audio recordings, or video. If you're on a phone, you can record directly.</p>
-            <div style={{ border: '2px dashed #e8ddd4', padding: '2.5rem', textAlign: 'center', backgroundColor: '#faf8f4', marginBottom: '1rem' }}>
-              <p style={{ fontFamily: '"Manrope", sans-serif', color: '#7a6355', margin: 0 }}>📎 Drag and drop files here, or tap to upload</p>
-              <p style={{ fontFamily: '"Manrope", sans-serif', color: '#b0a090', fontSize: '0.8rem', marginTop: '0.5rem' }}>JPG, PNG, MP3, WAV, MP4, MOV — up to 10MB</p>
-            </div>
+            <label htmlFor="media-upload" style={{ display: 'block', cursor: 'pointer' }}>
+              <div style={{ border: '2px dashed #c2714f', padding: '2.5rem', textAlign: 'center', backgroundColor: '#fdf0e8', marginBottom: '1rem' }}>
+                <p style={{ fontFamily: '"Manrope", sans-serif', color: '#c2714f', margin: 0, fontWeight: 500 }}>📎 Tap here to upload a file</p>
+                <p style={{ fontFamily: '"Manrope", sans-serif', color: '#b0a090', fontSize: '0.8rem', marginTop: '0.5rem' }}>JPG, PNG, MP3, WAV, MP4, MOV — up to 10MB</p>
+                {form.mediaFile && <p style={{ fontFamily: '"Manrope", sans-serif', color: '#2d6a4f', fontSize: '0.85rem', marginTop: '0.75rem', fontWeight: 500 }}>✓ {form.mediaFile}</p>}
+              </div>
+            </label>
+            <input
+              id="media-upload"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,audio/mp3,audio/wav,audio/m4a,video/mp4,video/mov,video/webm"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files[0]
+                if (file) set('mediaFile', file.name)
+              }}
+            />
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button style={{ ...s.btn, backgroundColor: '#7a6355' }} onClick={back}>← Back</button>
               <button style={s.btn} onClick={next}>Continue →</button>
