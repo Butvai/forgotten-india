@@ -30,7 +30,7 @@ export function Navigation() {
             <Link href="/about" className="text-charcoal-700 hover:text-terracotta-600 transition-colors">
               About
             </Link>
-            <Link href="/contribute">
+            <Link href="/share">
               <Button size="sm" className="bg-terracotta-600 hover:bg-terracotta-700 text-white">
                 Share a memory
               </Button>
@@ -63,7 +63,7 @@ export function Navigation() {
             <Link href="/about" className="block text-charcoal-700 hover:text-terracotta-600">
               About
             </Link>
-            <Link href="/contribute" className="block">
+            <Link href="/share" className="block">
               <Button size="sm" className="w-full bg-terracotta-600 hover:bg-terracotta-700 text-white">
                 Share a memory
               </Button>
