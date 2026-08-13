@@ -67,6 +67,18 @@ export default function MemoryPage() {
             <p style={s.body}>{memory.content}</p>
           </div>
         )}
+        {memory.media && memory.media.length > 0 && (
+          <div style={s.section}>
+            <div style={s.label}>Media</div>
+            {memory.media.map((m, i) => (
+              <div key={i} style={{ marginBottom: '1rem' }}>
+                {m.type === 'IMAGE' && <img src={m.url} alt={memory.title} style={{ maxWidth: '100%', border: '1px solid #e8ddd4' }} />}
+                {m.type === 'AUDIO' && <audio controls src={m.url} style={{ width: '100%', marginTop: '0.5rem' }} />}
+                {m.type === 'VIDEO' && <video controls src={m.url} style={{ maxWidth: '100%', marginTop: '0.5rem' }} />}
+              </div>
+            ))}
+          </div>
+        )}
         <div style={s.divider} />
         <div style={s.attribution}>
           <div style={s.attrLabel}>Remembered by</div>

@@ -28,7 +28,8 @@ const s = {
 export default function SharePage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  const [form, setForm] = useState({ category: '', title: '', description: '', story: '', whoTaught: '', language: '', state: '', district: '', town: '', contributorName: '', isAnonymous: false, consent: false })
+  const [form, setForm] = useState({ category: '', title: '', description: '', story: '', whoTaught: '', language: '', state: '', district: '', town: '', contributorName: '', isAnonymous: false, consent: false, mediaFile: '', mediaUrl: '' })
+  const [uploading, setUploading] = useState(false)
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
   const next = () => setStep(s => s + 1)
@@ -110,7 +111,9 @@ export default function SharePage() {
               <div style={{ border: '2px dashed #c2714f', padding: '2.5rem', textAlign: 'center', backgroundColor: '#fdf0e8', marginBottom: '1rem' }}>
                 <p style={{ fontFamily: '"Manrope", sans-serif', color: '#c2714f', margin: 0, fontWeight: 500 }}>📎 Tap here to upload a file</p>
                 <p style={{ fontFamily: '"Manrope", sans-serif', color: '#b0a090', fontSize: '0.8rem', marginTop: '0.5rem' }}>JPG, PNG, MP3, WAV, MP4, MOV — up to 10MB</p>
-                {form.mediaFile && <p style={{ fontFamily: '"Manrope", sans-serif', color: '#2d6a4f', fontSize: '0.85rem', marginTop: '0.75rem', fontWeight: 500 }}>✓ {form.mediaFile}</p>}
+                {uploading && <p style={{ fontFamily: '"Manrope", sans-serif', color: '#c2714f', fontSize: '0.85rem', marginTop: '0.75rem', fontWeight: 500 }}>Uploading...</p>}
+                {form.mediaUrl && <p style={{ fontFamily: '"Manrope", sans-serif', color: '#2d6a4f', fontSize: '0.85rem', marginTop: '0.75rem', fontWeight: 500 }}>✓ Uploaded</p>}
+                {form.mediaFile && !form.mediaUrl && !uploading && <p style={{ fontFamily: '"Manrope", sans-serif', color: '#7a6355', fontSize: '0.85rem', marginTop: '0.75rem' }}>{form.mediaFile}</p>}
               </div>
             </label>
             <input
@@ -118,9 +121,19 @@ export default function SharePage() {
               type="file"
               accept="image/jpeg,image/png,image/webp,audio/mp3,audio/wav,audio/m4a,video/mp4,video/mov,video/webm"
               style={{ display: 'none' }}
-              onChange={(e) => {
+              onChange={async (e) => {
                 const file = e.target.files[0]
-                if (file) set('mediaFile', file.name)
+                if (!file) return
+                set('mediaFile', file.name)
+                setUploading(true)
+                try {
+                  const fd = new FormData()
+                  fd.append('file', file)
+                  const res = await fetch('/api/upload', { method: 'POST', body: fd })
+                  const data = await res.json()
+                  if (data.url) set('mediaUrl', data.url)
+                } catch (err) { console.error(err) }
+                setUploading(false)
               }}
             />
             <div style={{ display: 'flex', gap: '1rem' }}>

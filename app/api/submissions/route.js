@@ -52,6 +52,15 @@ export async function POST(request) {
       }
     })
 
+    // Create media record if mediaUrl is provided
+    if (body.mediaUrl) {
+      const mediaType = body.mediaUrl.match(/\.(mp4|mov|webm|avi)$/i) ? 'VIDEO' :
+                        body.mediaUrl.match(/\.(mp3|wav|m4a|ogg)$/i) ? 'AUDIO' : 'IMAGE'
+      await prisma.media.create({
+        data: { submissionId: submission.id, url: body.mediaUrl, type: mediaType }
+      })
+    }
+
     await prisma.$disconnect()
     return NextResponse.json({ submission, message: 'Submitted successfully' })
   } catch (e) {
