@@ -31,7 +31,7 @@ export default function ThankYouPage() {
                   Back to Home
                 </Button>
               </Link>
-              <Link href="/contribute">
+              <Link href="/share">
                 <Button size="lg" className="bg-terracotta-600 hover:bg-terracotta-700">
                   Share Another Memory
                   <ChevronRight className="ml-2 h-4 w-4" />
