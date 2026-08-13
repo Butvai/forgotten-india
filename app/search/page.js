@@ -69,12 +69,13 @@ function SearchResults() {
                 <p>Nothing found. Try a different word — or <a href="/share" style={{ color: '#c2714f' }}>share this memory yourself</a>.</p>
               </div>
             ) : results.map(sub => (
-              <div key={sub.id} style={s.card}>
+              <a key={sub.id} href={`/memory/${sub.id}`} style={{ ...s.card, textDecoration: 'none', display: 'block', cursor: 'pointer' }}>
                 <div style={s.cardCat}>{sub.category?.name}</div>
                 <div style={s.cardTitle}>{sub.title}</div>
                 <div style={s.cardMeta}>{sub.state?.name}{sub.district ? ' · ' + sub.district.name : ''}{sub.contributor?.name ? ' · ' + sub.contributor.name : ''}</div>
                 {sub.description && <div style={s.cardDesc}>{sub.description.slice(0,200)}{sub.description.length > 200 ? '...' : ''}</div>}
-              </div>
+                <div style={{ marginTop: '0.75rem', fontFamily: '"Manrope", sans-serif', fontSize: '0.8rem', color: '#c2714f', fontWeight: 500 }}>Read memory →</div>
+              </a>
             ))}
           </>
         )}
